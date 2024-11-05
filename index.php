@@ -10,4 +10,8 @@ echo $page;
 <script src="/index.js?202411061255"></script>
 <script>
     const sushiexpress = new SushiExpress();
+    window.addEventListener('load', () => {
+        console.clear();
+        console.log("開發者們，歡迎前往GitHub看看這個專案～\nGitHub: https://github.com/80113hunterhsu/sushi-express-order-page");
+    })
 </script>
