@@ -26,6 +26,18 @@ function writeLog($message, $logFile = 'access.log', $level = 'INFO')
         FILE_APPEND | LOCK_EX
     ) !== false;
 }
+function notify($msg)
+{
+    $url = "https://ntfy.hunterhsu.net/sushi-express";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $msg);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    curl_exec($ch);
+    curl_close($ch);
+}
 $page = file_get_contents('https://www.sushiexpress.com.tw/sushi-express/Menu');
 $page = preg_replace('/href=\"\//', 'href="https://www.sushiexpress.com.tw/', $page);   // css/link href
 $page = preg_replace('/src=\"\//', 'src="https://www.sushiexpress.com.tw/', $page);     // js/img src
@@ -37,7 +49,7 @@ $log = sprintf(
     $_SERVER['HTTP_USER_AGENT']
 );
 writeLog($log);
-
+notify($log);
 ?>
 
 <!-- bootstrap icon -->
