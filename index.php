@@ -26,6 +26,20 @@ function writeLog($message, $logFile = 'access.log', $level = 'INFO')
         FILE_APPEND | LOCK_EX
     ) !== false;
 }
+
+function curl($url)
+{
+    $curl = curl_init();
+    curl_setopt_array($curl, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_USERAGENT => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36'
+    ]);
+    $response = curl_exec($curl);
+    curl_close($curl);
+    return $response;
+}
+
 function notify($msg)
 {
     $url = "https://ntfy.hunterhsu.net/sushi-express";
@@ -38,14 +52,29 @@ function notify($msg)
     curl_exec($ch);
     curl_close($ch);
 }
-$page = file_get_contents('https://www.sushiexpress.com.tw/sushi-express/Menu');
+
+$botUserAgents = [
+    'facebookexternalhit',
+    'Googlebot',
+    'ChatGPT',
+    'bingbot'
+];
+$regex = sprintf('/%s/', implode('|', $botUserAgents));
+
+if (preg_match($regex, $_SERVER['HTTP_USER_AGENT'])) {
+    // block bots
+    header('Location: https://www.hunterhsu.net');
+    exit;
+}
+
+$page = curl('https://www.sushiexpress.com.tw/sushi-express/Menu');
 $page = preg_replace('/href=\"\//', 'href="https://www.sushiexpress.com.tw/', $page);   // css/link href
 $page = preg_replace('/src=\"\//', 'src="https://www.sushiexpress.com.tw/', $page);     // js/img src
 $page = preg_replace('/url\(\"\//', 'url("https://www.sushiexpress.com.tw/', $page);    // css properties url()
 echo $page;
 $log = sprintf(
     'IP:[%s], UserAgent:[%s]',
-    $_SERVER['HTTP_CF_CONNECTING_IP'],
+    $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'],
     $_SERVER['HTTP_USER_AGENT']
 );
 writeLog($log);
